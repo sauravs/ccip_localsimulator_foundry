@@ -1,24 +1,63 @@
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.19;
 
-import {Test, console} from "forge-std/Test.sol";
-import {Counter} from "../src/Counter.sol";
+import {Test, console2} from "forge-std/Test.sol";
+import {CCIPSender_Unsafe} from "../src/CCIPSender_Unsafe.sol";
+import {CCIPReceiver_Unsafe} from "../src/CCIPReceiver_Unsafe.sol";
+import {CCIPLocalSimulator, IRouterClient, LinkToken, BurnMintERC677Helper} from "@chainlink/local/src/ccip/CCIPLocalSimulator.sol";
 
-contract CounterTest is Test {
-    Counter public counter;
+contract UnsafeTokenAndDataTransferTest is Test {
+    CCIPSender_Unsafe public sender;
+    CCIPReceiver_Unsafe public receiver;
+
+    uint64 chainSelector;
+    BurnMintERC677Helper ccipBnM;
 
     function setUp() public {
-        counter = new Counter();
-        counter.setNumber(0);
+        CCIPLocalSimulator ccipLocalSimulator = new CCIPLocalSimulator();
+
+        (
+            uint64 chainSelector_,
+            IRouterClient sourceRouter_,
+            IRouterClient destinationRouter_,
+            ,
+            LinkToken linkToken_,
+            BurnMintERC677Helper ccipBnM_,
+
+        ) = ccipLocalSimulator.configuration();
+
+        chainSelector = chainSelector_;
+        ccipBnM = ccipBnM_;
+        address sourceRouter = address(sourceRouter_);
+        address linkToken = address(linkToken_);
+        address destinationRouter = address(destinationRouter_);
+
+        sender = new CCIPSender_Unsafe(linkToken, sourceRouter);
+        receiver = new CCIPReceiver_Unsafe(destinationRouter);
     }
 
-    function test_Increment() public {
-        counter.increment();
-        assertEq(counter.number(), 1);
-    }
+    function testSend() public {
+        ccipBnM.drip(address(sender)); // 1e18
+        assertEq(ccipBnM.totalSupply(), 1 ether);
 
-    function testFuzz_SetNumber(uint256 x) public {
-        counter.setNumber(x);
-        assertEq(counter.number(), x);
+        string memory textToSend = "Hello World";
+        uint256 amountToSend = 100;
+
+        bytes32 messageId = sender.send(
+            address(receiver),
+            textToSend,
+            chainSelector,
+            address(ccipBnM),
+            amountToSend
+        );
+        console2.logBytes32(messageId);
+
+        string memory receivedText = receiver.text();
+
+        assertEq(receivedText, textToSend);
+
+        assertEq(ccipBnM.balanceOf(address(sender)), 1 ether - amountToSend);
+        assertEq(ccipBnM.balanceOf(address(receiver)), amountToSend);
+        assertEq(ccipBnM.totalSupply(), 1 ether);
     }
 }
