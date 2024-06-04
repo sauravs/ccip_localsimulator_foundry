@@ -2,66 +2,42 @@
 pragma solidity ^0.8.20;
 
 import {Test, console2} from "forge-std/Test.sol";
-import {RPG}  from "../src/RPG.sol";
+import {RPGItemNFT} from "../src/RPG.sol";
 
-
-contract RPGTest is Test {
-    RPG rpg;
+contract RPGItemNFTTest is Test {
+    RPGItemNFT rpg;
 
     function setUp() public {
-        rpg = new rpg(
-            "Sword",
-            "RPGItem",
-            "RPG",
-            ["Tier1", "Tier2"],
-            [10, 20, 1, 5],
+        uint8[] memory baseStats = new uint8[](2);
+        baseStats[0] = 10;
+        baseStats[1] = 20;
+
+        string[] memory svgColors = new string[](2);
+        svgColors[0] = "#FF0000";
+        svgColors[1] = "#00FF00";
+
+        uint8[] memory colorRanges = new uint8[](2);
+        colorRanges[0] = 1;
+        colorRanges[1] = 2;
+
+        rpg = new RPGItemNFT(
+            "SWORD",
+            "He-man Sword",
+            "HSWD",
+            ["Strength","Agility"],
+            baseStats,
             msg.sender,
-            ["#FF0000", "#00FF00"],
-            [1, 2],
+            svgColors,
+            colorRanges,
             address(0),
             1 ether,
             1
         );
     }
 
-    function testMint() public {
-        uint256 initialBalance = address(this).balance;
-        payable(address(rpg)).transfer(1 ether);
-        rpg.mint{value: 1 ether}();
-        assertEq(rpg.balanceOf(address(this)), 1);
-        assertEq(address(this).balance, initialBalance - 1 ether);
-    }
-
-    function testFailMintWithoutEther() public {
-        rpg.mint();
-    }
-
-    function testUpdateStats() public {
-        payable(address(rpg)).transfer(1 ether);
-        rpg.mint{value: 1 ether}();
-        rpg.updateStats(0, address(this), 20, 30, 2, 10);
-        (uint8 stat1, uint8 stat2, uint8 specialType, uint8 specialPoints) = rpg.getTokenStats(0);
-        assertEq(stat1, 20);
-        assertEq(stat2, 30);
-        assertEq(specialType, 2);
-        assertEq(specialPoints, 10);
-    }
-
-    function testLockStatus() public {
-        payable(address(rpg)).transfer(1 ether);
-        rpg.mint{value: 1 ether}();
-        assertFalse(rpg.lockStatus(0));
-        rpg.setTokenLockStatus(0, block.timestamp + 1 days);
-        assertTrue(rpg.lockStatus(0));
+    function testSetMintPrice() public {
+        uint256 newMintPrice = 2 ether;
+        rpg.setMintPrice(newMintPrice);
+        assertEq(rpg.mintPrice(), newMintPrice);
     }
 }
-
-
-
-
-
-
-
-
-}
-

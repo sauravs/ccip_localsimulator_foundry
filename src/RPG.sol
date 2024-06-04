@@ -1,3 +1,10 @@
+
+
+//   * can transfer the NFT
+//   * Not burnable
+					   
+
+
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
@@ -31,7 +38,7 @@ contract RPGItemNFT is ERC721, ERC721Burnable, Ownable {
     uint256 constant BASE_PRICE_IN_MATIC = 1e18 / 100;
     // No change to this stat.
     struct StatType {
-        uint8 stat1;
+        uint8 stat1;                  
         uint8 stat2;
         uint8 specialType;
         uint8 specialPoints;
@@ -73,11 +80,11 @@ contract RPGItemNFT is ERC721, ERC721Burnable, Ownable {
         string memory itemType__,
         string memory tokenName__,
         string memory tokenSymbol__,
-        string[2] memory labels__,      // labels for level 0-100 : tier1 200-300 : tier 3
+        string[2] memory labels__,      // labels is name of statstype
         uint8[] memory baseStat__,
         address initialOwner__,
-        string[] memory svgColors__,
-        uint8[] memory colorRanges__,
+        string[] memory svgColors__,    // svgColors   0-10 : #EFFF 
+        uint8[] memory colorRanges__,   // colorRanges : 0-10-20-30
         address ccipHandler,
         uint256 mintPrice__,
         uint256 parentChainId__
@@ -170,6 +177,8 @@ contract RPGItemNFT is ERC721, ERC721Burnable, Ownable {
         tokenLockedTill[tokenId] = 0;
         emit NftMinted(msg.sender, tokenId, block.timestamp);
     }
+
+
 
     function generateSVG(
         string memory color,
