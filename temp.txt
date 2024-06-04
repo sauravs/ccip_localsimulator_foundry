@@ -1,0 +1,50 @@
+pragma solidity ^0.8.0;
+
+import "truffle/Assert.sol";
+import "../contracts/RPG.sol";
+
+contract TestRPG {
+    function testConstructor() public {
+        string[2] memory labels = ["Strength", "Agility"];
+        uint8[] memory baseStats = new uint8[](4);
+        baseStats[0] = 10;
+        baseStats[1] = 20;
+        baseStats[2] = 1;
+        baseStats[3] = 5;
+        string[] memory svgColors = new string[](2);
+        svgColors[0] = "#FF0000";
+        svgColors[1] = "#00FF00";
+        uint8[] memory colorRanges = new uint8[](2);
+        colorRanges[0] = 1;
+        colorRanges[1] = 2;
+
+        RPG rpg = new RPG(
+            "SWORD",
+            "He-man Sword",
+            "HSWD",
+            labels,
+            baseStats,
+            msg.sender,
+            svgColors,
+            colorRanges,
+            address(0),
+            1 ether,
+            1
+        );
+
+        Assert.equal(rpg.itemType(), "SWORD", "The itemType should be SWORD");
+        Assert.equal(rpg.tokenName(), "He-man Sword", "The tokenName should be He-man Sword");
+        Assert.equal(rpg.tokenSymbol(), "HSWD", "The tokenSymbol should be HSWD");
+        Assert.equal(rpg.statLabels(0), "Strength", "The first statLabel should be Strength");
+        Assert.equal(rpg.statLabels(1), "Agility", "The second statLabel should be Agility");
+        Assert.equal(rpg.baseStat().stat1, 10, "The first baseStat should be 10");
+        Assert.equal(rpg.baseStat().stat2, 20, "The second baseStat should be 20");
+        Assert.equal(rpg.baseStat().specialType, 1, "The specialType should be 1");
+        Assert.equal(rpg.baseStat().specialPoints, 5, "The specialPoints should be 5");
+        Assert.equal(rpg.svgColors(0), "#FF0000", "The first svgColor should be #FF0000");
+        Assert.equal(rpg.svgColors(1), "#00FF00", "The second svgColor should be #00FF00");
+        Assert.equal(rpg.colorRanges(0), 1, "The first colorRange should be 1");
+        Assert.equal(rpg.colorRanges(1), 2, "The second colorRange should be 2");
+        Assert.equal(rpg.mintPrice(), 1 ether, "The mintPrice should be 1 ether");
+    }
+}
