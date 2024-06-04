@@ -6,6 +6,7 @@ import {RPGItemNFT} from "../src/RPG.sol";
 
 contract RPGItemNFTTest is Test {
    
+   RPGItemNFT public rpg;
 
     function setUp() public {
         // RPGItemNFT rpg;
@@ -25,28 +26,8 @@ contract RPGItemNFTTest is Test {
         colorRanges[1] = 2;
 
 
-/**
 
- string memory itemType__,
-        string memory tokenName__,
-        string memory tokenSymbol__,
-        string[2] memory labels__,      // labels is name of statstype
-        uint8[] memory baseStat__,
-        address initialOwner__,
-        string[] memory svgColors__,    // svgColors   0-10 : #EFFF 
-        uint8[] memory colorRanges__,   // colorRanges : 0-10-20-30
-        address ccipHandler,
-        uint256 mintPrice__,
-        uint256 parentChainId__
-
-
-
-
-
-
-
- */
-        RPGItemNFT rpg = new RPGItemNFT(
+         rpg = new RPGItemNFT(
             "SWORD",
             "He-man Sword",
             "HSWD",
@@ -59,7 +40,24 @@ contract RPGItemNFTTest is Test {
             1 ether,
             1
         );
+        
+        // assertEq(rpg.name(),"He-man Sword");
+        // assertEq(rpg.symbol(),"HSWD");
+        // assertEq(rpg.owner(), msg.sender);
+        //  assertEq(rpg.mintPrice(), 1 ether);
+        
     }
+
+    function testConstructor() public {
+
+
+        
+         assertEq(rpg.name(),"He-man Sword");
+        assertEq(rpg.symbol(),"HSWD");
+        assertEq(rpg.owner(), msg.sender);
+         assertEq(rpg.mintPrice(), 1 ether);
+    }
+    
 
     function testSetMintPrice() public {
         // uint256 newMintPrice = 2 ether;
