@@ -109,6 +109,9 @@ contract RPGItemNFTTest is Test {
 
         uint256 currentTokenCount = 0;
         uint256 mintPrice = rpg.mintPrice();
+         uint256 tokenId = 0;
+        
+        
 
         //assertEq(initialTokenCount, 0, "Initial token count is not 0");
 
@@ -119,10 +122,14 @@ contract RPGItemNFTTest is Test {
        //generte new fake address and then try to mint via that address
 
         // Send the correct amount of Ether to the mint function
+        address someUser = makeAddr("someUser");
+          vm.deal(someUser, 100 ether);
+
+        vm.prank(someUser);
         rpg.mint{value: mintPrice}();
 
-        // Check that the token count increased by 1
-        assertEq( currentTokenCount , 1 ,"Token count did not increase");
+      address newOwner = rpg.ownerOf(tokenId);
+        assertEq(newOwner, someUser, "Token was not minted correctly");
 
         // // Check that the last token was minted to the test contract
         // assertEq(rpg.ownerOf(currentTokenCount + 1), address(this), "Last token was not minted to the test contract");
