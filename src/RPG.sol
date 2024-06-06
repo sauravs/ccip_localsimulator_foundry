@@ -162,15 +162,15 @@ contract RPGItemNFT is ERC721, ERC721Burnable, Ownable {
     }
 
     function mint() public payable {
-        require(
-            _parentChainId == block.chainid,
-            string(
-                abi.encodePacked(
-                    "Mint is not allowed on this chain , You can mint on ChainId : ",
-                    _parentChainId.toString()
-                )
-            )
-        );
+        // require(                        // @audit 
+        //     _parentChainId == block.chainid,
+        //     string(
+        //         abi.encodePacked(
+        //             "Mint is not allowed on this chain , You can mint on ChainId : ",
+        //             _parentChainId.toString()
+        //         )
+        //     )
+        // );
         require(msg.value == mintPrice, "Insufficient Ether sent for minting");
         uint256 tokenId = _nextTokenId++;
         _safeMint(msg.sender, tokenId);
