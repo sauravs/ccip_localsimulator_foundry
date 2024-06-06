@@ -8,11 +8,14 @@ import {RPGItemNFT} from "../src/RPG.sol";
 contract RPGItemNFTTest is Test {
    
    RPGItemNFT public rpg;
-   //address public myEOA = address(0x1234...);
+
+     address minterA ;
+         
+ 
 
     function setUp() public {
-        // RPGItemNFT rpg;
-
+        
+       minterA = makeAddr("minterA");
 
         string[2] memory labels = ["Strength", "Agility"];
         uint8[] memory baseStats = new uint8[](4);
@@ -43,10 +46,7 @@ contract RPGItemNFTTest is Test {
             1
         );
         
-        // assertEq(rpg.name(),"He-man Sword");
-        // assertEq(rpg.symbol(),"HSWD");
-        // assertEq(rpg.owner(), msg.sender);
-        //  assertEq(rpg.mintPrice(), 1 ether);
+       
         
     }
 
@@ -113,26 +113,19 @@ contract RPGItemNFTTest is Test {
         
         
 
-        //assertEq(initialTokenCount, 0, "Initial token count is not 0");
 
         assertEq(mintPrice, 1 ether, "Mint price is not 1 Ether");
 
-       //error is coming because transferring to zero address
+    
+          vm.deal(minterA, 100 ether);
 
-       //generte new fake address and then try to mint via that address
-
-        // Send the correct amount of Ether to the mint function
-        address someUser = makeAddr("someUser");
-          vm.deal(someUser, 100 ether);
-
-        vm.prank(someUser);
+        vm.prank(minterA);
         rpg.mint{value: mintPrice}();
 
       address newOwner = rpg.ownerOf(tokenId);
-        assertEq(newOwner, someUser, "Token was not minted correctly");
+        assertEq(newOwner, minterA, "Token was not minted correctly");
 
-        // // Check that the last token was minted to the test contract
-        // assertEq(rpg.ownerOf(currentTokenCount + 1), address(this), "Last token was not minted to the test contract");
+   
     }
 
 
