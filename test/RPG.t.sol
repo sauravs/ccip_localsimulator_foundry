@@ -3,6 +3,7 @@ pragma solidity ^0.8.20;
 
 import {Test, console2} from "forge-std/Test.sol";
 import {RPGItemNFT} from "../src/RPG.sol";
+import {CCIPLocalSimulator, IRouterClient, LinkToken, BurnMintERC677Helper} from "@chainlink/local/src/ccip/CCIPLocalSimulator.sol";
 //import forge-std/console2.sol;
 
 contract RPGItemNFTTest is Test {
@@ -46,7 +47,30 @@ contract RPGItemNFTTest is Test {
             1
         );
         
-       
+       //////////////////////////////////////////////////CCIP LOCAL SIMPULATOR//////////////////////////////////////////////////////////////
+
+
+         CCIPLocalSimulator ccipLocalSimulator = new CCIPLocalSimulator();
+
+        (
+            uint64 chainSelector_,
+            IRouterClient sourceRouter_,
+            IRouterClient destinationRouter_,
+            ,
+            LinkToken linkToken_,
+            BurnMintERC677Helper ccipBnM_,
+
+        ) = ccipLocalSimulator.configuration();
+
+        // chainSelector = chainSelector_;
+        // ccipBnM = ccipBnM_;
+        // address sourceRouter = address(sourceRouter_);
+        // address linkToken = address(linkToken_);
+        // address destinationRouter = address(destinationRouter_);
+
+        // sender = new CCIPSender_Unsafe(linkToken, sourceRouter);
+        // receiver = new CCIPReceiver_Unsafe(destinationRouter);
+        
         
     }
 
@@ -81,33 +105,12 @@ contract RPGItemNFTTest is Test {
     }
 
 
-    function skiptestgetTokenStats() public {
-
-         uint256 tokenId = 1; // The ID of the token you minted in setUp
-
-        // Set the expected stats
-        uint8 expectedStat1 = 10;
-        uint8 expectedStat2 = 20;
-        uint8 expectedSpecialType = 1;
-        uint8 expectedSpecialPoints = 5;
-
-        // Call getTokenStats and check the returned stats
-        (uint8 stat1, uint8 stat2, uint8 specialType, uint8 specialPoints) = rpg.getTokenStats(tokenId);
-        assertEq(stat1, expectedStat1, "stat1 does not match");
-        assertEq(stat2, expectedStat2, "stat2 does not match");
-        assertEq(specialType, expectedSpecialType, "specialType does not match");
-        assertEq(specialPoints, expectedSpecialPoints, "specialPoints does not match");
-      
-       
-
-
-    }
+  
 
     function testMint() public {
 
         //uint256 initialTokenCount = rpg.totalSupply();
 
-        uint256 currentTokenCount = 0;
         uint256 mintPrice = rpg.mintPrice();
          uint256 tokenId = 0;
         
@@ -130,14 +133,29 @@ contract RPGItemNFTTest is Test {
 
 
 
-     function skiptestOwnerOf() public {
-        uint256 tokenId = 1; // The ID of the token you minted in setUp
+  
 
-        // Call ownerOf and check the returned owner
-        assertEq(rpg.ownerOf(tokenId), address(this), "Owner is not correct");
+  function skiptestgetTokenStats() public {
+
+         uint256 tokenId = 1; // The ID of the token you minted in setUp
+
+        // Set the expected stats
+        uint8 expectedStat1 = 10;
+        uint8 expectedStat2 = 20;
+        uint8 expectedSpecialType = 1;
+        uint8 expectedSpecialPoints = 5;
+
+        // Call getTokenStats and check the returned stats
+        (uint8 stat1, uint8 stat2, uint8 specialType, uint8 specialPoints) = rpg.getTokenStats(tokenId);
+        assertEq(stat1, expectedStat1, "stat1 does not match");
+        assertEq(stat2, expectedStat2, "stat2 does not match");
+        assertEq(specialType, expectedSpecialType, "specialType does not match");
+        assertEq(specialPoints, expectedSpecialPoints, "specialPoints does not match");
+      
+       
+
+
     }
-
-
 
      function skiptestChangeCCIP() public {
         // address newAdd = address(0x123); // Replace with a real address

@@ -18,7 +18,7 @@ interface IRPGItemNFT {
             uint8
         );
 
-    function updateStatsAndUser(
+    function updateStatsAndUser(                               //@audit this function not found in RPG.sol // but available in ccip.sol
         uint256 tokenId,
         address newOwner,
         uint8 stat1,
@@ -27,7 +27,7 @@ interface IRPGItemNFT {
         uint8 specialPoints
     ) external;
 
-    function addTokenStats(
+    function addTokenStats(                                      //@audit this function not found in RPG.sol and also not avaialble in ccip.sol
         address recipient,
         uint256 tokenId,
         uint8 stat1,
@@ -38,7 +38,7 @@ interface IRPGItemNFT {
 
     function mint() external payable;
 
-    function powerLevel(uint256 tokenId) external view returns (uint256);
+    function powerLevel(uint256 tokenId) external view returns (uint256);   //@audit this function not found in RPG.sol and also not avaialble in ccip.sol
 
     function powerLevelColor(uint256 tokenId)
         external
@@ -61,16 +61,16 @@ interface IRPGItemNFT {
 
     function getSpecial(uint256 tokenId) external view returns (uint8, uint8);
 
-    function isApprovedForAll(address owner, address operator)
+    function isApprovedForAll(address owner, address operator)    // @audit available in ccip.sol
         external
         view
         returns (bool);
 
     function approve(address to, uint256 tokenId) external;
 
-    function getApproved(uint256 tokenId) external view returns (address);
+    function getApproved(uint256 tokenId) external view returns (address);   // @audit not available in RPG.sol and also not in ccip.sol
 
-    function transfer(address to, uint256 tokenId) external;
+    function transfer(address to, uint256 tokenId) external;   
 
     function transferFrom(
         address from,

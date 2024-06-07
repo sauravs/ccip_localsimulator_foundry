@@ -17,7 +17,7 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
     using Strings for uint256;
     using Strings for uint8;
     using Strings for uint160;
-    uint256 private _gasLimit;
+    uint256 private _gasLimit;                               // @audit RPG
     IRPGItemNFT public nftContract;
     error NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees); // Used to make sure contract has enough balance.
     error NothingToWithdraw(); // Used when trying to withdraw Ether but there's nothing to withdraw.
@@ -53,7 +53,7 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
     mapping(address => bool) public allowlistedSenders;
 
     constructor(address _router, uint256 gasLimit) CCIPReceiver(_router) {
-        _gasLimit = gasLimit;
+        _gasLimit = gasLimit;                                                      // @audit RPG why gaslimit //  gaslimit : 800000
     }
 
     modifier onlyAllowlistedDestinationChain(uint64 _destinationChainSelector) {
@@ -91,11 +91,11 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
         allowlistedSenders[_sender] = allowed;
     }
 
-    function setGasLimit(uint256 _limit) external onlyOwner {
+    function setGasLimit(uint256 _limit) external onlyOwner {                //@audit RPG
         _gasLimit = _limit;
     }
 
-    function asciiToUint(string memory _asciiString)
+    function asciiToUint(string memory _asciiString)                         //@audit RPG   // because in ccip we can only send strings this is for tha purpose // @audit can be made internal
         public
         pure
         returns (uint256)
@@ -111,11 +111,11 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
         return result;
     }
 
-    function uintToASCII(uint256 _number) public pure returns (string memory) {
+    function uintToASCII(uint256 _number) public pure returns (string memory) {     //@audit RPG
         return _number.toString();
     }
 
-    function addressToString(address _address)
+    function addressToString(address _address)                                     //@audit RPG
         public
         pure
         returns (string memory)
@@ -123,7 +123,7 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
         return uint160(_address).toString();
     }
 
-    function stringToAddress(string memory _string)
+    function stringToAddress(string memory _string)                   //@audit RPG
         public
         pure
         returns (address)
@@ -133,7 +133,7 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
         return address(uint160(number));
     }
 
-    function createMessageStr(                   // @audit @dev
+    function createMessageStr(                   // @audit @dev RPG    // here we craft stats in this chain (construct) and destruct it later on different chain
         uint256 tokenId,
         address nftOwner,
         address senderContractAdd,
@@ -146,7 +146,7 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
             "Stats array must contain exactly four elements"
         );
         return
-            string(                                     // @audit @dev
+            string(                                     // @audit @dev RPG
                 abi.encodePacked(
                     tokenId.toString(),
                     ":",
@@ -170,7 +170,7 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
             );
     }
 
-    function readMessageStr(string memory _str)
+    function readMessageStr(string memory _str)     // @audit @dev RPG deconstuct message on desitnation chain
         public
         pure
         returns (string[] memory messageParts)
@@ -178,7 +178,7 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
         messageParts = _str.split(":");
     }
 
-    function transferNft(
+    function transferNft(                              //@audit RPG were you able to transfer nft?
         uint256 _tokenId,
         address senderNftContractAddress,
         address destinationNftContractAddress,
@@ -194,7 +194,7 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
         );
 
         require(
-            !nftContract.lockStatus(_tokenId),
+            !nftContract.lockStatus(_tokenId),                    //@audit purpose of locking?
             "Token is locked and cannot be transferred"
         );
 
