@@ -3,7 +3,6 @@ pragma solidity ^0.8.20;
 
 import {Test, console2} from "forge-std/Test.sol";
 import {RPGItemNFT} from "../src/RPG.sol";
-import {CCIPLocalSimulator, IRouterClient, LinkToken, BurnMintERC677Helper} from "@chainlink/local/src/ccip/CCIPLocalSimulator.sol";
 //import forge-std/console2.sol;
 
 contract RPGItemNFTTest is Test {
@@ -50,26 +49,6 @@ contract RPGItemNFTTest is Test {
        //////////////////////////////////////////////////CCIP LOCAL SIMPULATOR//////////////////////////////////////////////////////////////
 
 
-         CCIPLocalSimulator ccipLocalSimulator = new CCIPLocalSimulator();
-
-        (
-            uint64 chainSelector_,
-            IRouterClient sourceRouter_,
-            IRouterClient destinationRouter_,
-            ,
-            LinkToken linkToken_,
-            BurnMintERC677Helper ccipBnM_,
-
-        ) = ccipLocalSimulator.configuration();
-
-        // chainSelector = chainSelector_;
-        // ccipBnM = ccipBnM_;
-        // address sourceRouter = address(sourceRouter_);
-        // address linkToken = address(linkToken_);
-        // address destinationRouter = address(destinationRouter_);
-
-        // sender = new CCIPSender_Unsafe(linkToken, sourceRouter);
-        // receiver = new CCIPReceiver_Unsafe(destinationRouter);
         
         
     }
