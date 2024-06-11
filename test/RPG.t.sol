@@ -11,7 +11,8 @@ import {CCIPLocalSimulator, IRouterClient, WETH9,LinkToken, BurnMintERC677Helper
 
 contract RPGItemNFTTest is Test {
    
-   RPGItemNFT public rpg;
+   RPGItemNFT public rpg;                            // rpg sender contract
+   RPGItemNFT public rpg_receiver;                   // rpg receiver contract
    
    CCIP_RPG_SENDER public ccipRpgSender;
    CCIP_RPG_RECEIVER public ccipRpgReceiver;
@@ -26,38 +27,11 @@ contract RPGItemNFTTest is Test {
  
 
     function setUp() public {
-        
+
+            
        minterA = makeAddr("minterA");
        NFTRecevier = makeAddr("NFTRecevier");
-        string[2] memory labels = ["Strength", "Agility"];
-        uint8[] memory baseStats = new uint8[](4);
-        baseStats[0] = 10;
-        baseStats[1] = 20;
-        baseStats[2] = 1;
-        baseStats[3] = 5;
-        string[] memory svgColors = new string[](2);
-        svgColors[0] = "#FF0000";
-        svgColors[1] = "#00FF00";
-        uint8[] memory colorRanges = new uint8[](2);
-        colorRanges[0] = 1;
-        colorRanges[1] = 2;
-
-
-
-         rpg = new RPGItemNFT(
-            "SWORD",
-            "He-man Sword",
-            "HSWD",
-            labels,
-            baseStats,
-            msg.sender,
-            svgColors,
-            colorRanges,
-            address(0),
-            0.0001 ether,
-            1
-        );
-        
+     
         /***********************************CCIP RELATED *****************************************************/
         CCIPLocalSimulator ccipLocalSimulator = new CCIPLocalSimulator();
     
@@ -84,6 +58,54 @@ contract RPGItemNFTTest is Test {
         ccipRpgSender = new CCIP_RPG_SENDER(sourceRouter,800000);  // constructor(address _router, uint256 gasLimit) 
         ccipRpgReceiver = new CCIP_RPG_RECEIVER(destinationRouter,800000);
 
+
+
+        /***********************************RPG NFT CONTRACT RELATED *****************************************************/
+
+        string[2] memory labels = ["Strength", "Agility"];
+        uint8[] memory baseStats = new uint8[](4);
+        baseStats[0] = 10;
+        baseStats[1] = 20;
+        baseStats[2] = 1;
+        baseStats[3] = 5;
+        string[] memory svgColors = new string[](2);
+        svgColors[0] = "#FF0000";
+        svgColors[1] = "#00FF00";
+        uint8[] memory colorRanges = new uint8[](2);
+        colorRanges[0] = 1;
+        colorRanges[1] = 2;
+
+
+
+         rpg = new RPGItemNFT(
+            "SWORD",
+            "He-man Sword",
+            "HSWD",
+            labels,
+            baseStats,
+            msg.sender,
+            svgColors,
+            colorRanges,
+            address(ccipRpgSender),
+            0.0001 ether,
+            1
+        );
+       
+
+       rpg_receiver = new RPGItemNFT(
+            "SWORD",
+            "He-man Sword",
+            "HSWD",
+            labels,
+            baseStats,
+            msg.sender,
+            svgColors,
+            colorRanges,
+            address(ccipRpgReceiver),
+            0.0001 ether,
+            1
+        );
+       
         
         
     }
@@ -235,12 +257,13 @@ function testTransfer() public {
         // Set a future timestamp as unlockTime
         uint256 unlockTime = block.timestamp + 1 days;
 
-        // Set the sender to _ccipHandler
-        address ccipHandler = address(0); 
-        vm.prank(ccipHandler);
+        // // Set the sender to _ccipHandler
+        // address ccipHandler = address(0); 
+        // vm.prank(ccipHandler);
 
 
         // Call setTokenLockStatus
+        vm.prank( address(ccipRpgSender));
         rpg.setTokenLockStatus(tokenId, unlockTime);
 
         // Check tokenLockedTill[tokenId]
@@ -279,7 +302,7 @@ function testTransfer() public {
 
         uint basePriceInMatic = rpg.BASE_PRICE_IN_MATIC();
 
-        console2.log("basePriceInMatic", basePriceInMatic);
+        //console2.log("basePriceInMatic", basePriceInMatic);
 
         // Get the current stats
         uint8 oldStat1 = rpg.getStat("Strength", tokenId);   
@@ -347,6 +370,7 @@ RPGItemNFT.StatType memory newStats = rpg.calculateUpgrade(oldStats);
    function testCCIPFunctionality() public {
         
         // Allow the sender and receiver to communicate with each other
+        
         ccipRpgSender.allowlistDestinationChain(chainSelector,true);
         ccipRpgReceiver.allowlistSourceChain(chainSelector,true);
         ccipRpgReceiver.allowlistSender(address(ccipRpgSender),true);
@@ -372,14 +396,18 @@ RPGItemNFT.StatType memory newStats = rpg.calculateUpgrade(oldStats);
     rpg.isApprovedForAll(minterA,address(ccipRpgSender));
 
 
-
+  
 
   // transferNft(_tokenId, senderNftContractAddress ,destinationNftContractAddress ,destinationChainId , _receiver)               
         
     //bytes32 messageID= ccipRpgSender.transferNft(0,address(rpg),address(rpg),chainSelector,address(ccipRpgReceiver));   
-   // console2.logBytes32(messageID);                
+   // console2.logBytes32(messageID);     
+
+   // IMPORTANT : you have to deploy two times rpg contract by passing cciphandler_sender and cciphandler_receiver address in constructor to make it work   
+
+        
       
-    ccipRpgSender.transferNft(0,address(rpg),address(rpg),chainSelector,address(ccipRpgReceiver));  
+    ccipRpgSender.transferNft(0,address(rpg),address(rpg_receiver),chainSelector,address(ccipRpgReceiver));  
 
      // ccipRpgReceiver.getLastReceivedMessageDetails()
       
