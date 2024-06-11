@@ -4,6 +4,8 @@
 //   * Not burnable   // but  erc721burnable imported
 					   
 
+                        // @audit remove ERC721Burnable
+
 
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
@@ -28,7 +30,7 @@ contract RPGItemNFT is ERC721, ERC721Burnable, Ownable {
         "https://plum-liable-mastodon-450.mypinata.cloud/ipfs/QmaXD4NLN9hn5cb9jTd78faMvU3RNmf34gvhLGsnq67zs3";
     string[] private svgColors;
     uint8[] private colorRanges;
-    address private _ccipHandler;
+    address public _ccipHandler;   //@audit : made it public for testing purpose ,also better to make it public anyways to validate via UX
     uint256 private _parentChainId;
  ////////////////////////////////////////////////////////////D//////////////////////////////////////////////////////////////////////////////
 
@@ -43,7 +45,7 @@ contract RPGItemNFT is ERC721, ERC721Burnable, Ownable {
  ////////////////////////////////////////////////////////////D//////////////////////////////////////////////////////////////////////////////
 
 
-    uint256 constant BASE_PRICE_IN_MATIC = 1e18 / 100;                           // 1 % of 1 ether
+    uint256 public BASE_PRICE_IN_MATIC = 1e18 / 100;           //@audit for testing purpose making it public and removing constants                // 1 % of 1 ether
     // No change to this stat.
     struct StatType {
         uint8 stat1;                  
@@ -56,11 +58,11 @@ contract RPGItemNFT is ERC721, ERC721Burnable, Ownable {
  ////////////////////////////////////////////////////////////D//////////////////////////////////////////////////////////////////////////////
 
 
-    mapping(uint256 => StatType) upgradeMapping;   // tokenID->StatType
+    mapping(uint256 => StatType) public upgradeMapping;   // tokenID->StatType  // @audit made it public for testing purpose
 
-    mapping(bytes32 => StatType) newStatMap;      // hash of StatType -> StatType
+    mapping(bytes32 => StatType) public newStatMap;      // hash of StatType -> StatType   // @audit made it public for testing purpose
 
-    mapping(uint256 => uint256) tokenLockedTill;  // ccip related
+    mapping(uint256 => uint256) public tokenLockedTill;  // ccip related // tokenID -> unlockTime //@audit should be make public to validate via UX how much time left //also made public for testing purpose
  ////////////////////////////////////////////////////////////D//////////////////////////////////////////////////////////////////////////////
 
 
@@ -94,7 +96,7 @@ contract RPGItemNFT is ERC721, ERC721Burnable, Ownable {
         string memory itemType__,
         string memory tokenName__,
         string memory tokenSymbol__,
-        string[2] memory labels__,      // labels is name of statstype
+        string[2] memory labels__,      // labels is name of statstype //@audit -> labels 0 ,1,2 3 labels?
         uint8[] memory baseStat__,
         address initialOwner__,
         string[] memory svgColors__,    // svgColors   0-10 : #EFFF 
@@ -129,7 +131,7 @@ contract RPGItemNFT is ERC721, ERC721Burnable, Ownable {
         mintPrice = _mintPrice;
     }
 //////////////////////////////////////////////////////////////////D/////////////////////////////////////////////////////////////////
-    function getTokenStats(uint256 tokenId)
+    function getTokenStats(uint256 tokenId)                       //@audit what is the purpose of this,confusion with getStats()
         public
         view
         returns (
@@ -151,21 +153,21 @@ contract RPGItemNFT is ERC721, ERC721Burnable, Ownable {
    
    // @audit : function updateStats() -> anyone who knows the token id would be able to update the stats of the token ,not desirable
    
-    function updateStats(  
+    function updateStats(                                        //ccip related
         uint256 tokenId,
         address newOwner,
         uint8 stat1,
         uint8 stat2,
         uint8 specialType,
         uint8 specialPoints
-    ) external returns (bool) {
+    ) external returns (bool)  {
         require(newOwner != address(0), "Invalid new owner address");
 
         address currentOwner = ownerOf(tokenId);
 
         if (currentOwner == address(0)) {                               
             _safeMint(newOwner, tokenId);
-            tokenLockedTill[tokenId] = 0;                                      // @audit : to be understand
+            tokenLockedTill[tokenId] = 0;                                     
             emit NftMinted(newOwner, tokenId, block.timestamp);
         }
 
@@ -179,34 +181,7 @@ contract RPGItemNFT is ERC721, ERC721Burnable, Ownable {
     }
 ///////////////////////////////////////////////////////////////////////D/////////////////////////////////////////////////////////////////////
    
-   
-  // we have to deploy both RPG and and ccip contract on both and desitnation chain
-
-
-
-
-   // @audit: function mint() -> why not mint(to, tokenId) instead of mint() ? why restricted to minting only to msg.sender?
-
-   // we are minting here on source chain ethereum NFT and then transferring it
-
-   //3) now nft minted on parent chain ethereum now I want to transfer it on destination chain Polygon ...the steps will be
-
-   // 3.1) isApprovedForAll() after deployment ccip ...default function : in this pass address of ccip handler  (put true as value) (only source)
-   // 3.2)   
-   
-   //set following on both the chains
-   // mapping(uint64 => bool) public allowlistedDestinationChains;  /
-
-    //mapping(uint64 => bool) public allowlistedSourceChains;
-
-    //mapping(address => bool) public allowlistedSenders; // polygon (destination) ccip  deployed address
-
-
-
-
-
-   // 3.3) then call transferNft()
-   // 3.4) parentchain ID native token as a fee
+  
    
     function mint() public payable {
         // require(                        // @audit 
@@ -253,7 +228,7 @@ contract RPGItemNFT is ERC721, ERC721Burnable, Ownable {
 
 //////////////////////////////////////////////////////////////D//////////////////////////////////////////////////////////////////////////////
 
-    function ownerOf(uint256 tokenId)
+    function ownerOf(uint256 tokenId)   
         public
         view
         virtual
@@ -315,16 +290,46 @@ contract RPGItemNFT is ERC721, ERC721Burnable, Ownable {
 
 
 /////////////////////////////////////////////////////////////////D///////////////////////////////////////////////////////////////////////////
-    function calculatePrice(StatType memory stat)
+    
+    //@audit Function declared as pure, but this expression (potentially) reads from the environment or state and thus requires "view"   updating it from pure to view
+
+
+    //@audit   arithmetic underflow or overflow (0x11)] for basePriceInMatic 10000000000000000 
+
+
+  //  stat.stat1 =10
+ // stat.stat2 = 20
+ // statPriceMultiplier__ =  (10+20)*100/2 = 1500 
+  
+  //10000000000000000* statPriceMultiplier__   10000000000000000*1500
+  
+ 
+
+
+
+
+    
+    // function calculatePrice(StatType memory stat)                 // previous code
+    //     public
+    //     pure
+    //     returns (uint256)
+    // {
+    //     return (BASE_PRICE_IN_MATIC * statPriceMultiplier__(stat));    // 1%*statPriceMultiplier
+
+    // }
+
+
+     function calculatePrice(StatType memory stat)                 // updated code
         public
-        pure
+        view
         returns (uint256)
     {
-        return (BASE_PRICE_IN_MATIC * statPriceMultiplier__(stat));    // 1%*statPriceMultiplier
+        return (BASE_PRICE_IN_MATIC * statPriceMultiplier__(stat));    
+
     }
 
 ///////////////////////////////////////////////////////////////ND////////////////////////////////////////////////////////////////////////////
-
+// @audit power level -> 0 ,1 ,3  // basically it shows value of that asset in marketplace
     function powerLevel__(uint256 tokenId) public view returns (uint256) {
         StatType memory previousStat = upgradeMapping[tokenId];
         return
@@ -358,12 +363,15 @@ contract RPGItemNFT is ERC721, ERC721Burnable, Ownable {
         pure
         returns (uint256)
     {
-        return ((stat.stat1 + stat.stat2) * 100) / 2;
+        return ((stat.stat1 + stat.stat2) * 100) / 2;  //For considering decimal (denominator averageing out)
     }
 
 
 //////////////////////////////////////////////////////////////////ND/////////////////////////////////////////////////////////////////////////
-    function calculateUpgrade(StatType memory previousStat)
+    
+    //@audit could be made private
+    
+    function calculateUpgrade(StatType memory previousStat)   
         public
         returns (StatType memory)
     {
@@ -403,7 +411,8 @@ contract RPGItemNFT is ERC721, ERC721Burnable, Ownable {
 
     ///////////////////////////////////////////////////////////////D/////////////////////////////////////////////////////////////////////
 
-    function calculateStat__(StatType memory previousStat, uint8 _increment)
+
+    function calculateStat__(StatType memory previousStat, uint8 _increment)   
         internal
         pure
         returns (StatType memory)
@@ -416,7 +425,10 @@ contract RPGItemNFT is ERC721, ERC721Burnable, Ownable {
 
     ////////////////////////////////////////////////////////////D////////////////////////////////////////////////////////////////////////
 
-    function getStat(string memory statLabel, uint256 tokenId)
+    //@audit when no tokenID minted  it should return zero
+
+
+    function getStat(string memory statLabel, uint256 tokenId)       
         public
         view
         returns (uint8 stat)
